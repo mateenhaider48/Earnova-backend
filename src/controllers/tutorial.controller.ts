@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import Tutorial from "../models/tutorial.model"
 import { uploadToCloudinary } from "../utils/uploadToCloudinary";
 import Income from "../models/income.model";
+import CompanyAds from "../models/companyAds.model";
 
 
 /*
@@ -396,6 +397,97 @@ export const getIncome = async (req: any, res: any) => {
     return res.status(500).json({
       success: false,
       message: "Failed to get income image",
+    });
+  }
+};
+
+export const createCompanyAd = async (req: any, res: any) => {
+  try {
+
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        message: "Ad image is required",
+      });
+    }
+
+    const uploadedImage = await uploadToCloudinary(
+      req.file
+    );
+
+    const companyAds = await CompanyAds.create({
+      image: uploadedImage.url,
+    });
+
+    return res.status(201).json({
+      success: true,
+      message: "Ads image uploaded successfully",
+      data: companyAds,
+    });
+  } catch (error) {
+  
+
+    return res.status(500).json({
+      success: false,
+      message:
+        error instanceof Error
+          ? error.message
+          : "Failed to upload income image",
+    });
+  }
+};
+
+export const getCompanyAds = async (req: any, res: any) => {
+  try {
+    const companyAds = await CompanyAds.find({})
+
+    return res.status(200).json({
+      success: true,
+      data: companyAds,
+    });
+  } catch (error) {
+    console.error("Get Income Error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Failed to get income image",
+    });
+  }
+};
+
+export const deleteCompanyAd = async (
+  req: Request,
+  res: Response
+) => {
+  try {
+    const company =
+      await CompanyAds.findByIdAndDelete(
+        req.params.id
+      );
+
+    if (!company) {
+      return res.status(404).json({
+        success: false,
+        message:
+          "Company Ad not found.",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message:
+        "Company Ad deleted successfully.",
+    });
+  } catch (error) {
+    console.error(
+      "Delete Company Error:",
+      error
+    );
+
+    return res.status(500).json({
+      success: false,
+      message:
+        "Failed to delete Company Ad.",
     });
   }
 };

@@ -6,6 +6,11 @@ import {
   uploadToCloudinary,
 } from "../utils/uploadToCloudinary";
 
+interface PlanFiles {
+  planImage?: Express.Multer.File[];
+  activePlanImage?: Express.Multer.File[];
+}
+
 // ============================================================
 // CREATE SUBSCRIPTION
 // ============================================================
@@ -25,11 +30,17 @@ export const createSubscription = async (
     } = req.body || {};
 
     // ========================================================
-    // IMAGE
+    // FILES
     // ========================================================
 
+    const files =
+      (req.files as PlanFiles | undefined) || {};
+
     const planImageFile =
-      req.file;
+      files.planImage?.[0];
+
+    const activePlanImageFile =
+      files.activePlanImage?.[0];
 
     // ========================================================
     // VALIDATION
@@ -41,8 +52,7 @@ export const createSubscription = async (
     ) {
       return res.status(400).json({
         success: false,
-        message:
-          "Plan name is required.",
+        message: "Plan name is required.",
       });
     }
 
@@ -55,8 +65,7 @@ export const createSubscription = async (
     ) {
       return res.status(400).json({
         success: false,
-        message:
-          "Valid amount is required.",
+        message: "Valid amount is required.",
       });
     }
 
@@ -126,21 +135,49 @@ export const createSubscription = async (
 
     // ========================================================
     // CLOUDINARY
-    // OPTIONAL IMAGE
+    // PLAN IMAGE
     // ========================================================
 
-    let planImage:
-      | string
-      | null = null;
+    let planImage: string | null = null;
 
     if (planImageFile) {
-      const uploaded =
+      console.log(
+        "Uploading plan image:",
+        planImageFile.originalname,
+      );
+
+      const uploadedPlanImage =
         await uploadToCloudinary(
-          planImageFile
+          planImageFile,
+          "subscription-plans",
         );
 
       planImage =
-        uploaded.url;
+        uploadedPlanImage.url;
+    }
+
+    // ========================================================
+    // CLOUDINARY
+    // ACTIVE PLAN IMAGE
+    // ========================================================
+
+    let activePlanImage: string | null =
+      null;
+
+    if (activePlanImageFile) {
+      console.log(
+        "Uploading active plan image:",
+        activePlanImageFile.originalname,
+      );
+
+      const uploadedActivePlanImage =
+        await uploadToCloudinary(
+          activePlanImageFile,
+          "subscription-active-plans",
+        );
+
+      activePlanImage =
+        uploadedActivePlanImage.url;
     }
 
     // ========================================================
@@ -168,7 +205,13 @@ export const createSubscription = async (
           active,
 
         planImage,
+
+        activePlanImage,
       });
+
+    // ========================================================
+    // RESPONSE
+    // ========================================================
 
     return res.status(201).json({
       success: true,
@@ -200,10 +243,9 @@ export const getAllSubscriptions = async (
 ): Promise<Response> => {
   try {
     const subscriptions =
-      await Subscription.find()
-        .sort({
-          createdAt: -1,
-        });
+      await Subscription.find().sort({
+        createdAt: -1,
+      });
 
     return res.status(200).json({
       success: true,
@@ -266,6 +308,7 @@ export const getSubscriptionById = async (
 // ============================================================
 // UPDATE SUBSCRIPTION
 // ============================================================
+
 export const updateSubscription = async (
   req: Request,
   res: Response,
@@ -283,7 +326,8 @@ export const updateSubscription = async (
     if (!subscription) {
       return res.status(404).json({
         success: false,
-        message: "Subscription not found.",
+        message:
+          "Subscription not found.",
       });
     }
 
@@ -301,11 +345,18 @@ export const updateSubscription = async (
     } = req.body || {};
 
     // ========================================================
-    // IMAGE
-    // Frontend field name MUST be: planImage
+    // FILES
     // ========================================================
 
-    const planImageFile = req.file;
+    const files =
+      (req.files as PlanFiles | undefined) ||
+      {};
+
+    const planImageFile =
+      files.planImage?.[0];
+
+    const activePlanImageFile =
+      files.activePlanImage?.[0];
 
     // ========================================================
     // PLAN NAME
@@ -318,7 +369,8 @@ export const updateSubscription = async (
       ) {
         return res.status(400).json({
           success: false,
-          message: "Plan name is required.",
+          message:
+            "Plan name is required.",
         });
       }
 
@@ -338,12 +390,15 @@ export const updateSubscription = async (
         Number(amount);
 
       if (
-        !Number.isFinite(numericAmount) ||
+        !Number.isFinite(
+          numericAmount,
+        ) ||
         numericAmount <= 0
       ) {
         return res.status(400).json({
           success: false,
-          message: "Invalid amount.",
+          message:
+            "Invalid amount.",
         });
       }
 
@@ -363,12 +418,15 @@ export const updateSubscription = async (
         Number(dailyAds);
 
       if (
-        !Number.isFinite(numericDailyAds) ||
+        !Number.isFinite(
+          numericDailyAds,
+        ) ||
         numericDailyAds <= 0
       ) {
         return res.status(400).json({
           success: false,
-          message: "Invalid daily ads value.",
+          message:
+            "Invalid daily ads value.",
         });
       }
 
@@ -455,30 +513,43 @@ export const updateSubscription = async (
     }
 
     // ========================================================
-    // IMAGE UPDATE
-    // OPTIONAL
-    //
-    // Agar new image nahi bheji gayi:
-    // purani image same rahegi.
-    //
-    // Agar new image bheji gayi:
-    // Cloudinary URL update ho jayega.
+    // PLAN IMAGE UPDATE
     // ========================================================
 
     if (planImageFile) {
       console.log(
-        "New subscription image received:",
+        "New plan image received:",
         planImageFile.originalname,
       );
 
-      const uploaded =
+      const uploadedPlanImage =
         await uploadToCloudinary(
           planImageFile,
           "subscription-plans",
         );
 
       subscription.planImage =
-        uploaded.url;
+        uploadedPlanImage.url;
+    }
+
+    // ========================================================
+    // ACTIVE PLAN IMAGE UPDATE
+    // ========================================================
+
+    if (activePlanImageFile) {
+      console.log(
+        "New active plan image received:",
+        activePlanImageFile.originalname,
+      );
+
+      const uploadedActivePlanImage =
+        await uploadToCloudinary(
+          activePlanImageFile,
+          "subscription-active-plans",
+        );
+
+      subscription.activePlanImage =
+        uploadedActivePlanImage.url;
     }
 
     // ========================================================
@@ -510,7 +581,6 @@ export const updateSubscription = async (
     });
   }
 };
-
 
 // ============================================================
 // DELETE SUBSCRIPTION

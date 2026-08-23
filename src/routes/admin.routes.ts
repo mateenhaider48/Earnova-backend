@@ -94,7 +94,16 @@ router.post(
   "/create-subscriptions",
   authCheck,
   authorized("admin"),
-  upload.single("image"),
+  upload.fields([
+    {
+      name: "planImage",
+      maxCount: 1,
+    },
+    {
+      name: "activePlanImage",
+      maxCount: 1,
+    },
+  ]),
   createSubscription,
 );
 // Update Subscription
@@ -102,7 +111,16 @@ router.put(
   "/update-subscription/:id",
   authCheck,
   authorized("admin"),
-   upload.single("image"),
+   upload.fields([
+    {
+      name: "planImage",
+      maxCount: 1,
+    },
+    {
+      name: "activePlanImage",
+      maxCount: 1,
+    },
+  ]),
   updateSubscription,
 );
 
@@ -345,7 +363,7 @@ import {
   updateWithdrawalStatus,
 } from "../controllers/withdrawl.controller";
 import { getSupport, updateSupport } from "../controllers/support.controller";
-import { createIncome, createTutorial, deleteTutorial, getIncome, getTutorialById, getTutorials, updateTutorial } from "../controllers/tutorial.controller";
+import { createCompanyAd, createIncome, createTutorial, deleteCompanyAd, deleteTutorial, getCompanyAds, getIncome, getTutorialById, getTutorials, updateTutorial } from "../controllers/tutorial.controller";
 import { approveRequest, getAllRequests, getSingleRequest, rejectRequest } from "../controllers/subscriptionRequest.controller";
 
 // Get Current Currency
@@ -477,6 +495,28 @@ router.get(
    authCheck,
   authorized("admin"),
   getIncome
+);
+
+router.post(
+  "/create-companyAd",
+  authCheck,
+  authorized("admin"),
+  upload.single("image"),
+  createCompanyAd
+);
+
+router.get(
+  "/get-companyAd",
+   authCheck,
+  authorized("admin"),
+  getCompanyAds
+);
+
+router.delete(
+  "/delete-companyAd/:id",
+  authCheck,
+  authorized("admin"),
+  deleteCompanyAd
 );
 
 

@@ -2524,7 +2524,10 @@ export const updateDepositStatus = async (
 
       user.recharge =
         depositAmount;
-
+     if(paymentRequest.planId){
+      user.lockedSubscriptionAmount = depositAmount
+     }   
+    
       await user.save();
 
       // ======================================================

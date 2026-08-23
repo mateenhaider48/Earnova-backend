@@ -23,7 +23,7 @@ import multer from "multer";
 import { getCurrency } from "../controllers/currency.controller";
 import { createWithdrawal, getWithdrawalAccount, getWithdrawalHistory, getWithdrawalMethods, saveWithdrawalAccount } from "../controllers/withdrawl.controller";
 import { getSupport } from "../controllers/support.controller";
-import { getIncome, getTutorials } from "../controllers/tutorial.controller";
+import { getCompanyAds, getIncome, getTutorials } from "../controllers/tutorial.controller";
 import { checkSubscription, createBalanceRequest, createPaymentRequest, getMyRequests } from "../controllers/subscriptionRequest.controller";
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -222,7 +222,12 @@ router.get(
   getMyRequests
 );
 
-
+router.get(
+  "/get-companyAd",
+   authCheck,
+  authorized("user"),
+  getCompanyAds
+);
 // ========================= // SITE SETTINGS // =========================
 router.get("/site-settings", getSiteSettings);
 

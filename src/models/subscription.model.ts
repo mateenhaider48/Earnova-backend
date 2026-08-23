@@ -14,6 +14,7 @@ export interface ISubscription extends Document {
 
   // Optional plan image
   planImage?: string | null;
+   activePlanImage?: string | null;
 
   createdAt: Date;
   updatedAt: Date;
@@ -61,6 +62,10 @@ const SubscriptionSchema: Schema =
 
       // Optional plan image
       planImage: {
+        type: String,
+        default: null,
+      },
+        activePlanImage: {
         type: String,
         default: null,
       },

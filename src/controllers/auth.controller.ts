@@ -501,7 +501,7 @@ export const getMe = async (
       .select("-password")
       .populate({
         path: "subscription",
-        select: "planName name",
+        select: "planName name activePlanImage",
       });
 
     if (!user) {
