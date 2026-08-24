@@ -22,7 +22,6 @@ export const registerUser = async (
       });
     }
 
-    console.log(reflink)
 
     const pakistanPhoneRegex = /^(?:\+92|92|0)3[0-9]{2}[0-9]{7}$/;
 
